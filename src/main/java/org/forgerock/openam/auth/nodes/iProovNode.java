@@ -117,7 +117,8 @@ public class iProovNode extends AbstractDecisionNode {
                 debug.error("[" + DEBUG_FILE + "]: " + "Got no session_key from iProov");
                 return goTo(false).build();
             }
-            else return send(new PollingWaitCallback("4000")).replaceSharedState(context.sharedState.copy().add("iproov_start", Time.currentTimeMillis()).add("iproov_session_key", session_key)).build();
+            else return send(new PollingWaitCallback.PollingWaitCallbackBuilder()
+                    .withWaitTime("4000").build()).replaceSharedState(context.sharedState.copy().add("iproov_start", Time.currentTimeMillis()).add("iproov_session_key", session_key)).build();
 
         } else {
             Optional<PollingWaitCallback> answer = context.getCallback(PollingWaitCallback.class);
@@ -129,7 +130,8 @@ public class iProovNode extends AbstractDecisionNode {
                 else if (state == State.FAILED) return goTo(false).build();
                 // If not exceeded maximum timeout then poll again
                 else if ((Time.currentTimeMillis() - context.sharedState.get("iproov_start").asLong()) < config.timeout())
-                    return send(new PollingWaitCallback("4000")).build();
+                    return send(new PollingWaitCallback.PollingWaitCallbackBuilder()
+                    .withWaitTime("4000").build()).build();
                 else return goTo(false).build();
             }
         }
@@ -202,6 +204,7 @@ public class iProovNode extends AbstractDecisionNode {
             while ((output = br.readLine()) != null) {
                 response = response + output;
             }
+            debug.error("[" + DEBUG_FILE + "]: iProov service response: " + output);
             conn.disconnect();
         } catch (MalformedURLException e) {
             e.printStackTrace();
